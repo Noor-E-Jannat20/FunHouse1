@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRACU CGPA Calculator</title>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --primary-light: #2255a4;
+    --accent: #e8a020;
+    --accent-hover: #c8851a;
+    --bg: #f0f4f9;
+    --card: #ffffff;
+    --border: #d0dbe8;
+    --text: #1a2535;
+    --text-muted: #5a6a7e;
+    --success: #1a7a4a;
+    --success-bg: #e8f5ee;
+    --danger: #c0392b;
+    --danger-bg: #fdecea;
+    --shadow: 0 2px 12px rgba(26,58,92,0.10);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+ 
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white; padding: 0;
+    box-shadow: 0 2px 16px rgba(26,58,92,0.18);
+  }
+  .header-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; gap: 18px;
+    padding: 18px 28px;
+  }
+  .logo { width: 52px; height: 52px; background: var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 22px; color: var(--primary); flex-shrink: 0; }
+  .header-title h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.01em; }
+  .header-title p { font-size: 0.82rem; opacity: 0.78; margin-top: 2px; }
+  .cgpa-badge {
+    margin-left: auto; background: rgba(255,255,255,0.13);
+    border: 2px solid var(--accent); border-radius: 14px;
+    padding: 10px 22px; text-align: center; min-width: 130px;
+  }
+  .cgpa-badge .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+  .cgpa-badge .value { font-size: 2.2rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
+  .cgpa-badge .credits { font-size: 0.75rem; opacity: 0.7; margin-top: 2px; }
+ 
+  /* TABS */
+  .tabs { background: var(--primary); border-bottom: 2px solid rgba(255,255,255,0.1); }
+  .tabs-inner { max-width: 1100px; margin: 0 auto; display: flex; padding: 0 28px; }
+  .tab { padding: 11px 22px; color: rgba(255,255,255,0.65); font-size: 0.88rem; font-weight: 500;
+    cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.18s; user-select: none; }
+  .tab:hover { color: white; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+ 
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 28px; }
+ 
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+ 
+  /* CARDS */
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .card-title svg { flex-shrink: 0; }
+ 
+  /* FORM GRID */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  input, select { border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 0.92rem; color: var(--text); background: white; transition: border-color 0.15s; outline: none; font-family: inherit; }
+  input:focus, select:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(34,85,164,0.1); }
+  input::placeholder { color: #b0bcc8; }
+ 
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: var(--primary); }
+  .btn-accent:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--primary); background: var(--bg); }
+  .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #f0c0bc; }
+  .btn-danger:hover { background: #f9dbd9; }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+ 
+  /* SEMESTER BLOCKS */
+  .semester-list { display: flex; flex-direction: column; gap: 18px; }
+  .semester-block { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
+  .semester-header {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white; padding: 14px 20px; cursor: pointer;
+  }
+  .semester-header h3 { font-size: 0.95rem; font-weight: 700; flex: 1; }
+  .sem-gpa-pill { background: rgba(255,255,255,0.18); border-radius: 20px; padding: 3px 14px; font-size: 0.82rem; font-weight: 700; color: var(--accent); }
+  .sem-credits-pill { font-size: 0.78rem; opacity: 0.75; }
+  .semester-body { padding: 0; }
+ 
+  /* COURSE TABLE */
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 14px; background: #f5f8fc; border-bottom: 1.5px solid var(--border); text-align: left; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fbff; }
+  .grade-chip { display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; padding: 3px 10px; font-size: 0.82rem; font-weight: 700; }
+  .gpa-high { background: var(--success-bg); color: var(--success); }
+  .gpa-mid { background: #fff8e6; color: #b07a00; }
+  .gpa-low { background: var(--danger-bg); color: var(--danger); }
+  .retake-badge { font-size: 0.7rem; background: #e8f0fe; color: #2255a4; border-radius: 4px; padding: 2px 7px; margin-left: 6px; font-weight: 600; }
+  .course-code { font-family: monospace; font-size: 0.85rem; font-weight: 700; color: var(--primary); }
+ 
+  /* RETAKE SECTION */
+  .retake-card { border: 2px dashed var(--accent); background: #fffbf0; }
+  .retake-card .card-title { color: var(--accent-hover); }
+ 
+  /* GRADE REF TABLE */
+  .grade-ref { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .grade-ref-item { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: 8px; padding: 8px 12px; }
+  .grade-letter { font-weight: 800; font-size: 1rem; color: var(--primary); width: 28px; }
+  .grade-points { font-size: 0.82rem; color: var(--text-muted); }
+  .grade-range { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
+ 
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 52px 20px; color: var(--text-muted); }
+  .empty svg { opacity: 0.3; margin-bottom: 14px; }
+  .empty p { font-size: 0.95rem; }
+ 
+  /* TOAST */
+  #toast { position: fixed; bottom: 28px; right: 28px; background: var(--primary); color: white; padding: 12px 22px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.18); opacity: 0; transform: translateY(14px); transition: all 0.25s; z-index: 999; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateY(0); }
+ 
+  /* SUMMARY STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .stat-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 16px 20px; }
+  .stat-card .s-label { font-size: 0.73rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .stat-card .s-val { font-size: 1.8rem; font-weight: 800; color: var(--primary); line-height: 1.1; margin-top: 4px; }
+  .stat-card .s-sub { font-size: 0.76rem; color: var(--text-muted); margin-top: 2px; }
+ 
+  /* IMPORT/EXPORT */
+  .import-area { border: 2px dashed var(--border); border-radius: 10px; padding: 28px; text-align: center; background: var(--bg); cursor: pointer; transition: border-color 0.15s; }
+  .import-area:hover { border-color: var(--primary-light); }
+  .import-area p { color: var(--text-muted); font-size: 0.88rem; }
+ 
+  @media (max-width: 640px) {
+    .header-inner { flex-wrap: wrap; gap: 12px; }
+    .cgpa-badge { margin-left: 0; }
+    main { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="header-inner">
+    <div class="logo">B</div>
+    <div class="header-title">
+      <h1>BRAC University CGPA Calculator</h1>
+      <p>Track your academic performance semester by semester</p>
+    </div>
+    <div class="cgpa-badge">
+      <div class="label">CGPA</div>
+      <div class="value" id="headerCGPA">—</div>
+      <div class="credits" id="headerCredits">0 credits</div>
+    </div>
+  </div>
+</header>
+ 
+<div class="tabs">
+  <div class="tabs-inner">
+    <div class="tab active" onclick="switchTab('gradesheet')">📋 Grade Sheet</div>
+    <div class="tab" onclick="switchTab('add')">➕ Add Courses</div>
+    <div class="tab" onclick="switchTab('retake')">🔁 Retake Course</div>
+    <div class="tab" onclick="switchTab('summary')">📊 Summary</div>
+    <div class="tab" onclick="switchTab('reference')">📖 Grade Reference</div>
+  </div>
+</div>
+ 
+<main>
+ 
+  <!-- GRADE SHEET PANEL -->
+  <div class="panel active" id="panel-gradesheet">
+    <div id="semesterList" class="semester-list"></div>
+    <div class="empty" id="emptyState">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <p>No courses added yet. Go to <strong>Add Courses</strong> to get started.</p>
+    </div>
+  </div>
+ 
+  <!-- ADD COURSES PANEL -->
+  <div class="panel" id="panel-add">
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add Course
+      </div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column: span 1">
+          <label>Semester</label>
+          <select id="addSemester">
+            <option value="">-- Select or type below --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>New Semester Name</label>
+          <input type="text" id="newSemesterName" placeholder="e.g. Spring 2024">
+        </div>
+        <div class="form-group">
+          <label>Course Code</label>
+          <input type="text" id="courseCode" placeholder="e.g. CSE101">
+        </div>
+        <div class="form-group" style="grid-column: span 2">
+          <label>Course Title</label>
+          <input type="text" id="courseTitle" placeholder="e.g. Introduction to Computer Science">
+        </div>
+        <div class="form-group">
+          <label>Credit Hours</label>
+          <input type="number" id="courseCredits" placeholder="e.g. 3" min="0.5" max="6" step="0.5">
+        </div>
+        <div class="form-group">
+          <label>Grade (Letter)</label>
+          <select id="courseGrade">
+            <option value="">-- Select Grade --</option>
+            <option value="A+">A+ (4.0)</option>
+            <option value="A">A (4.0)</option>
+            <option value="A-">A- (3.7)</option>
+            <option value="B+">B+ (3.3)</option>
+            <option value="B">B (3.0)</option>
+            <option value="B-">B- (2.7)</option>
+            <option value="C+">C+ (2.3)</option>
+            <option value="C">C (2.0)</option>
+            <option value="C-">C- (1.7)</option>
+            <option value="D+">D+ (1.3)</option>
+            <option value="D">D (1.0)</option>
+            <option value="D-">D- (0.7)</option>
+            <option value="F">F (0.0)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>OR Enter Marks</label>
+          <input type="number" id="courseMarks" placeholder="0–100" min="0" max="100">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="addCourse()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          Add Course
+        </button>
+        <button class="btn btn-ghost" onclick="clearAddForm()">Clear</button>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">📥 Import / Export</div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="exportData()">⬇️ Export JSON</button>
+        <label class="btn btn-ghost" style="cursor:pointer">
+          ⬆️ Import JSON <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+        </label>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Clear All Data</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- RETAKE PANEL -->
+  <div class="panel" id="panel-retake">
+    <div class="card retake-card">
+      <div class="card-title">🔁 Retake / Update Course Grade</div>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:18px;">Select a semester and course, then enter the new grade. The best attempt will be used for CGPA.</p>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Semester</label>
+          <select id="retakeSemester" onchange="populateRetakeCourses()">
+            <option value="">-- Select Semester --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Course</label>
+          <select id="retakeCourse">
+            <option value="">-- Select Course --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>New Grade</label>
+          <select id="retakeGrade">
+            <option value="">-- Select Grade --</option>
+            <option value="A+">A+ (4.0)</option>
+            <option value="A">A (4.0)</option>
+            <option value="A-">A- (3.7)</option>
+            <option value="B+">B+ (3.3)</option>
+            <option value="B">B (3.0)</option>
+            <option value="B-">B- (2.7)</option>
+            <option value="C+">C+ (2.3)</option>
+            <option value="C">C (2.0)</option>
+            <option value="C-">C- (1.7)</option>
+            <option value="D+">D+ (1.3)</option>
+            <option value="D">D (1.0)</option>
+            <option value="D-">D- (0.7)</option>
+            <option value="F">F (0.0)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>OR Enter Marks</label>
+          <input type="number" id="retakeMarks" placeholder="0–100" min="0" max="100">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-accent" onclick="submitRetake()">✅ Update Grade</button>
+      </div>
+    </div>
+    <div id="retakeHistory" class="semester-list"></div>
+  </div>
+ 
+  <!-- SUMMARY PANEL -->
+  <div class="panel" id="panel-summary">
+    <div class="stats-row" id="statsRow"></div>
+    <div id="semesterGPAChart" class="card">
+      <div class="card-title">📈 Semester-wise GPA</div>
+      <div id="chartArea"></div>
+    </div>
+  </div>
+ 
+  <!-- REFERENCE PANEL -->
+  <div class="panel" id="panel-reference">
+    <div class="card">
+      <div class="card-title">📖 BRAC University Grading Scale</div>
+      <div class="grade-ref" id="gradeRefGrid"></div>
+    </div>
+  </div>
+ 
+</main>
+ 
+<div id="toast"></div>
+ 
+<script>
+const GRADE_MAP = {
+  'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+  'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+  'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+  'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+  'F': 0.0
+};
+const GRADE_REF = [
+  { range: '97–100', letter: 'A+', points: 4.0, label: 'Exceptional' },
+  { range: '90–<97', letter: 'A', points: 4.0, label: 'Excellent' },
+  { range: '85–<90', letter: 'A-', points: 3.7, label: '' },
+  { range: '80–<85', letter: 'B+', points: 3.3, label: '' },
+  { range: '75–<80', letter: 'B', points: 3.0, label: 'Good' },
+  { range: '70–<75', letter: 'B-', points: 2.7, label: '' },
+  { range: '65–<70', letter: 'C+', points: 2.3, label: '' },
+  { range: '60–<65', letter: 'C', points: 2.0, label: 'Fair' },
+  { range: '57–<60', letter: 'C-', points: 1.7, label: '' },
+  { range: '55–<57', letter: 'D+', points: 1.3, label: '' },
+  { range: '52–<55', letter: 'D', points: 1.0, label: 'Poor' },
+  { range: '50–<52', letter: 'D-', points: 0.7, label: '' },
+  { range: '<50', letter: 'F', points: 0.0, label: 'Failure' },
+];
+ 
+function marksToGrade(m) {
+  m = parseFloat(m);
+  if (m >= 97) return 'A+';
+  if (m >= 90) return 'A';
+  if (m >= 85) return 'A-';
+  if (m >= 80) return 'B+';
+  if (m >= 75) return 'B';
+  if (m >= 70) return 'B-';
+  if (m >= 65) return 'C+';
+  if (m >= 60) return 'C';
+  if (m >= 57) return 'C-';
+  if (m >= 55) return 'D+';
+  if (m >= 52) return 'D';
+  if (m >= 50) return 'D-';
+  return 'F';
+}
+ 
+// DATA SHAPE: { semesters: { [name]: [ {code, title, credits, attempts:[{grade}]} ] } }
+let data = { semesters: {} };
+ 
+function loadData() {
+  try {
+    const s = localStorage.getItem('bracu_cgpa');
+    if (s) data = JSON.parse(s);
+  } catch(e) {}
+}
+function saveData() {
+  localStorage.setItem('bracu_cgpa', JSON.stringify(data));
+}
+ 
+function semesterOrder(name) {
+  const order = { 'spring': 0, 'summer': 1, 'fall': 2 };
+  const lower = name.toLowerCase();
+  for (const [k, v] of Object.entries(order)) if (lower.includes(k)) {
+    const yr = name.match(/\d{4}/);
+    return (yr ? parseInt(yr[0]) : 0) * 10 + v;
+  }
+  return 9999;
+}
+function getSortedSemesters() {
+  return Object.keys(data.semesters).sort((a, b) => semesterOrder(a) - semesterOrder(b));
+}
+ 
+function calcCGPA() {
+  let totalPoints = 0, totalCredits = 0;
+  const semesters = getSortedSemesters();
+  // Track best attempt per unique course code
+  const bestAttempts = {};
+  for (const sem of semesters) {
+    for (const course of data.semesters[sem]) {
+      const key = course.code.toUpperCase();
+      const bestGrade = course.attempts.reduce((best, a) => GRADE_MAP[a.grade] >= GRADE_MAP[best.grade] ? a : best, course.attempts[0]);
+      if (!bestAttempts[key] || GRADE_MAP[bestGrade.grade] > GRADE_MAP[bestAttempts[key].grade]) {
+        bestAttempts[key] = { ...bestGrade, credits: course.credits };
+      }
+    }
+  }
+  for (const [, v] of Object.entries(bestAttempts)) {
+    totalPoints += GRADE_MAP[v.grade] * v.credits;
+    totalCredits += v.credits;
+  }
+  return { cgpa: totalCredits > 0 ? totalPoints / totalCredits : 0, credits: totalCredits };
+}
+ 
+function calcSemGPA(courses) {
+  // Use latest attempt for semester GPA display
+  let p = 0, c = 0;
+  for (const course of courses) {
+    const latest = course.attempts[course.attempts.length - 1];
+    p += GRADE_MAP[latest.grade] * course.credits;
+    c += course.credits;
+  }
+  return c > 0 ? p / c : 0;
+}
+ 
+function gradeChipClass(gpa) {
+  if (gpa >= 3.5) return 'gpa-high';
+  if (gpa >= 2.0) return 'gpa-mid';
+  return 'gpa-low';
+}
+ 
+function renderGradeSheet() {
+  const semesters = getSortedSemesters();
+  const list = document.getElementById('semesterList');
+  const empty = document.getElementById('emptyState');
+  list.innerHTML = '';
+  if (semesters.length === 0) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+ 
+  for (const sem of semesters) {
+    const courses = data.semesters[sem];
+    const semGPA = calcSemGPA(courses).toFixed(2);
+    const semCredits = courses.reduce((s, c) => s + c.credits, 0);
+ 
+    const block = document.createElement('div');
+    block.className = 'semester-block';
+ 
+    let rows = '';
+    for (let i = 0; i < courses.length; i++) {
+      const c = courses[i];
+      const latest = c.attempts[c.attempts.length - 1];
+      const gp = GRADE_MAP[latest.grade];
+      const retakeInfo = c.attempts.length > 1 ? `<span class="retake-badge">Retaken ×${c.attempts.length - 1}</span>` : '';
+      rows += `<tr>
+        <td><span class="course-code">${c.code}</span>${retakeInfo}</td>
+        <td>${c.title}</td>
+        <td style="text-align:center">${c.credits}</td>
+        <td><span class="grade-chip ${gradeChipClass(gp)}">${latest.grade} &nbsp; ${gp.toFixed(1)}</span></td>
+        <td style="text-align:center">${(gp * c.credits).toFixed(2)}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteCourse('${sem}',${i})">✕</button></td>
+      </tr>`;
+    }
+ 
+    block.innerHTML = `
+      <div class="semester-header">
+        <h3>📅 ${sem}</h3>
+        <span class="sem-credits-pill">${semCredits} credits</span>
+        <span class="sem-gpa-pill">Sem GPA: ${semGPA}</span>
+      </div>
+      <div class="semester-body">
+        <table>
+          <thead><tr>
+            <th>Code</th><th>Title</th><th style="text-align:center">Credits</th>
+            <th>Grade</th><th style="text-align:center">Points</th><th></th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    list.appendChild(block);
+  }
+}
+ 
+function updateHeaderCGPA() {
+  const { cgpa, credits } = calcCGPA();
+  document.getElementById('headerCGPA').textContent = credits > 0 ? cgpa.toFixed(2) : '—';
+  document.getElementById('headerCredits').textContent = `${credits} credits`;
+}
+ 
+function populateSemesterDropdowns() {
+  const sems = getSortedSemesters();
+  ['addSemester', 'retakeSemester'].forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">-- Select --</option>` + sems.map(s => `<option value="${s}">${s}</option>`).join('');
+    if (cur && sems.includes(cur)) sel.value = cur;
+  });
+}
+ 
+function populateRetakeCourses() {
+  const sem = document.getElementById('retakeSemester').value;
+  const sel = document.getElementById('retakeCourse');
+  sel.innerHTML = '<option value="">-- Select Course --</option>';
+  if (!sem || !data.semesters[sem]) return;
+  data.semesters[sem].forEach((c, i) => {
+    const latest = c.attempts[c.attempts.length - 1];
+    sel.innerHTML += `<option value="${i}">${c.code} — ${c.title} (${latest.grade})</option>`;
+  });
+}
+ 
+function addCourse() {
+  let sem = document.getElementById('addSemester').value;
+  const newSem = document.getElementById('newSemesterName').value.trim();
+  if (newSem) sem = newSem;
+  const code = document.getElementById('courseCode').value.trim().toUpperCase();
+  const title = document.getElementById('courseTitle').value.trim();
+  const credits = parseFloat(document.getElementById('courseCredits').value);
+  let grade = document.getElementById('courseGrade').value;
+  const marks = document.getElementById('courseMarks').value;
+ 
+  if (!sem) return toast('Please select or enter a semester.', 'err');
+  if (!code) return toast('Course code is required.', 'err');
+  if (!title) return toast('Course title is required.', 'err');
+  if (!credits || isNaN(credits)) return toast('Enter valid credit hours.', 'err');
+  if (marks !== '') grade = marksToGrade(marks);
+  if (!grade) return toast('Select a grade or enter marks.', 'err');
+ 
+  if (!data.semesters[sem]) data.semesters[sem] = [];
+ 
+  // Check if course already exists in this semester
+  const existing = data.semesters[sem].find(c => c.code === code);
+  if (existing) {
+    existing.attempts.push({ grade });
+    toast(`Retake recorded for ${code}.`);
+  } else {
+    data.semesters[sem].push({ code, title, credits, attempts: [{ grade }] });
+    toast(`${code} added to ${sem}.`);
+  }
+ 
+  saveData();
+  renderGradeSheet();
+  updateHeaderCGPA();
+  populateSemesterDropdowns();
+  clearAddForm();
+}
+ 
+function clearAddForm() {
+  ['courseCode','courseTitle','courseCredits','courseMarks','newSemesterName'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('courseGrade').value = '';
+  document.getElementById('addSemester').value = '';
+}
+ 
+function deleteCourse(sem, idx) {
+  if (!confirm('Remove this course?')) return;
+  data.semesters[sem].splice(idx, 1);
+  if (data.semesters[sem].length === 0) delete data.semesters[sem];
+  saveData(); renderGradeSheet(); updateHeaderCGPA(); populateSemesterDropdowns();
+  toast('Course removed.');
+}
+ 
+function submitRetake() {
+  const sem = document.getElementById('retakeSemester').value;
+  const idx = document.getElementById('retakeCourse').value;
+  let grade = document.getElementById('retakeGrade').value;
+  const marks = document.getElementById('retakeMarks').value;
+ 
+  if (!sem) return toast('Select a semester.', 'err');
+  if (idx === '') return toast('Select a course.', 'err');
+  if (marks !== '') grade = marksToGrade(marks);
+  if (!grade) return toast('Select a grade or enter marks.', 'err');
+ 
+  const course = data.semesters[sem][parseInt(idx)];
+  course.attempts.push({ grade });
+  saveData(); renderGradeSheet(); updateHeaderCGPA();
+  toast(`Grade updated for ${course.code}. New grade: ${grade}`);
+  document.getElementById('retakeGrade').value = '';
+  document.getElementById('retakeMarks').value = '';
+  populateRetakeCourses();
+  renderRetakeHistory();
+}
+ 
+function renderRetakeHistory() {
+  const container = document.getElementById('retakeHistory');
+  container.innerHTML = '';
+  const sems = getSortedSemesters();
+  let hasRetakes = false;
+  for (const sem of sems) {
+    const retaken = data.semesters[sem].filter(c => c.attempts.length > 1);
+    if (retaken.length === 0) continue;
+    hasRetakes = true;
+    const block = document.createElement('div');
+    block.className = 'card';
+    let rows = retaken.map(c => {
+      const best = c.attempts.reduce((b, a) => GRADE_MAP[a.grade] >= GRADE_MAP[b.grade] ? a : b, c.attempts[0]);
+      return `<tr>
+        <td><span class="course-code">${c.code}</span></td>
+        <td>${c.title}</td>
+        <td>${c.attempts.map((a,i) => `<span class="grade-chip ${gradeChipClass(GRADE_MAP[a.grade])}" style="margin-right:4px">${i===0?'orig':'r'+i}: ${a.grade}</span>`).join('')}</td>
+        <td><span class="grade-chip gpa-high">Best: ${best.grade} (${GRADE_MAP[best.grade].toFixed(1)})</span></td>
+      </tr>`;
+    }).join('');
+    block.innerHTML = `<div class="card-title">🔁 ${sem} — Retaken Courses</div>
+      <table><thead><tr><th>Code</th><th>Title</th><th>Attempts</th><th>Best</th></tr></thead><tbody>${rows}</tbody></table>`;
+    container.appendChild(block);
+  }
+  if (!hasRetakes) {
+    container.innerHTML = '<div class="empty"><p>No retaken courses yet.</p></div>';
+  }
+}
+ 
+function renderSummary() {
+  const { cgpa, credits } = calcCGPA();
+  const sems = getSortedSemesters();
+  const totalCourses = sems.reduce((s, sem) => s + data.semesters[sem].length, 0);
+  const retaken = sems.reduce((s, sem) => s + data.semesters[sem].filter(c => c.attempts.length > 1).length, 0);
+ 
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="s-label">CGPA</div><div class="s-val">${credits > 0 ? cgpa.toFixed(2) : '—'}</div><div class="s-sub">Cumulative</div></div>
+    <div class="stat-card"><div class="s-label">Total Credits</div><div class="s-val">${credits}</div><div class="s-sub">Completed</div></div>
+    <div class="stat-card"><div class="s-label">Semesters</div><div class="s-val">${sems.length}</div><div class="s-sub">Enrolled</div></div>
+    <div class="stat-card"><div class="s-label">Courses</div><div class="s-val">${totalCourses}</div><div class="s-sub">Unique entries</div></div>
+    <div class="stat-card"><div class="s-label">Retaken</div><div class="s-val">${retaken}</div><div class="s-sub">Courses improved</div></div>
+  `;
+ 
+  // Bar chart
+  const chartArea = document.getElementById('chartArea');
+  if (sems.length === 0) { chartArea.innerHTML = '<div class="empty"><p>No data yet.</p></div>'; return; }
+ 
+  const maxGPA = 4.0;
+  const bars = sems.map(sem => {
+    const gpa = calcSemGPA(data.semesters[sem]);
+    const pct = (gpa / maxGPA) * 100;
+    const cls = gradeChipClass(gpa);
+    const color = cls === 'gpa-high' ? 'var(--success)' : cls === 'gpa-mid' ? '#e8a020' : 'var(--danger)';
+    return `<div style="flex:1;min-width:60px;max-width:100px;display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--primary)">${gpa.toFixed(2)}</div>
+      <div style="width:36px;background:var(--bg);border-radius:6px 6px 0 0;height:140px;display:flex;align-items:flex-end">
+        <div style="width:100%;height:${pct}%;background:${color};border-radius:6px 6px 0 0;transition:height 0.4s"></div>
+      </div>
+      <div style="font-size:0.7rem;text-align:center;color:var(--text-muted);word-break:break-word;max-width:80px">${sem}</div>
+    </div>`;
+  }).join('');
+  chartArea.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-end;overflow-x:auto;padding:8px 0">${bars}</div>`;
+}
+ 
+function renderGradeRef() {
+  const grid = document.getElementById('gradeRefGrid');
+  grid.innerHTML = GRADE_REF.map(g => `
+    <div class="grade-ref-item">
+      <span class="grade-letter">${g.letter}</span>
+      <div>
+        <div style="font-weight:700;font-size:0.88rem">${g.points.toFixed(1)} pts ${g.label ? '· ' + g.label : ''}</div>
+        <div class="grade-points">${g.range}</div>
+      </div>
+    </div>`).join('');
+}
+ 
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['gradesheet','add','retake','summary','reference'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'summary') renderSummary();
+  if (name === 'retake') { populateRetakeCourses(); renderRetakeHistory(); }
+}
+ 
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bracu_gradesheet.json';
+  a.click();
+  toast('Grade sheet exported!');
+}
+ 
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      data = JSON.parse(e.target.result);
+      saveData(); renderGradeSheet(); updateHeaderCGPA(); populateSemesterDropdowns();
+      toast('Grade sheet imported!');
+    } catch { toast('Invalid JSON file.', 'err'); }
+  };
+  reader.readAsText(file);
+}
+ 
+function clearAll() {
+  if (!confirm('Clear all data? This cannot be undone.')) return;
+  data = { semesters: {} };
+  saveData(); renderGradeSheet(); updateHeaderCGPA(); populateSemesterDropdowns();
+  toast('All data cleared.');
+}
+ 
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type === 'err' ? 'var(--danger)' : 'var(--primary)';
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
+}
+ 
+// INIT
+loadData();
+renderGradeSheet();
+updateHeaderCGPA();
+populateSemesterDropdowns();
+renderGradeRef();
+</script>
+</body>
+</html>
